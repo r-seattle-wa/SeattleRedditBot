@@ -1,0 +1,6 @@
+### Daily Sticky Post ###  will get stickied by Automoderator
+## 1-  get weather from NWS every two hours, generate for daily thread
+* */1 * * * /root/reddit/daily-post/Get-Forecast.sh >/dev/null 2>&1 
+*/5 * * * * /root/reddit/daily-post/Generate-Daily-Post.sh >/dev/null 2>&1
+## SeattleWA daily post - post it at 12:08am daily
+8 0 * * * cd /root/reddit/daily-post && /usr/bin/python /root/reddit/daily-post/Daily-Post.py 2>&1 >>/root/reddit/daily-post/Daily-Post.py.log
