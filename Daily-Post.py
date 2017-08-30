@@ -1,6 +1,5 @@
 #!/usr/bin/python
 
-# import
 import praw
 import os
 import time
@@ -15,10 +14,8 @@ reddit = praw.Reddit(client_id=CLIENT_ID,
                     user_agent=USER_AGENT,
                     username=USERNAME)
 
-#subreddit = reddit.subreddit('seattlewa')
-subreddit = reddit.subreddit('seattlewaredditbot')
+subreddit = reddit.subreddit('seattlewa')
 
-# what's the date and time?
 now = datetime.datetime.now()
 
 subreddit.submit(title=now.strftime("Seattle Reddit Community Open Chat, %A, %B %d, %Y"), 
