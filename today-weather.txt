@@ -1,6 +1,0 @@
-
-**Weather forecast for the /r/SeattleWA metro area from the NWS as of:** 08/29/17, 06:45:01 PM
-
-* Wednesday: Cloudy through mid morning, then gradual clearing, with a high near 73. South wind 5 to 9 mph becoming calm in the morning. 
-* Wednesday Night: Increasing clouds, with a low around 60. West northwest wind around 6 mph becoming southeast in the evening. 
-* Thursday: Mostly cloudy, then gradually becoming sunny, with a high near 75. South southwest wind 5 to 11 mph becoming north in the morning. 

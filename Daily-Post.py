@@ -2,27 +2,27 @@
 
 # import
 import praw
-import pdb
-import re
 import os
 import time
 import datetime
 
-##
-# Create the Reddit instance
-reddit = praw.Reddit('SeattleRedditBot')
+from bot import *
 
-subreddit = reddit.subreddit('seattlewa')
-#subreddit = reddit.subreddit('seattleredditbot')
+# Create the Reddit instance
+reddit = praw.Reddit(client_id=CLIENT_ID,
+                    client_secret=CLIENT_SECRET,
+                    password=PASSWORD,
+                    user_agent=USER_AGENT,
+                    username=USERNAME)
+
+#subreddit = reddit.subreddit('seattlewa')
+subreddit = reddit.subreddit('seattlewaredditbot')
 
 # what's the date and time?
 now = datetime.datetime.now()
 
-subreddit.submit(
-                 title=now.strftime("Seattle Reddit Community Open Chat, %A, %B %d, %Y"),
-#                 selftext='stuff', 
+subreddit.submit(title=now.strftime("Seattle Reddit Community Open Chat, %A, %B %d, %Y"), 
                  selftext=(open('daily-post.txt', 'r').read()),
                  url=None, 
                  resubmit=True, 
-                 send_replies=False
-                 )
+                 send_replies=False)

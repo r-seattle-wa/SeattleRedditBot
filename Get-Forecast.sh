@@ -1,7 +1,7 @@
 
 #!/bin/bash
 
-path=/root/reddit/daily-post
+path=/opt/reddit/SeattleRedditBot
 file=today-weather.txt
 
 

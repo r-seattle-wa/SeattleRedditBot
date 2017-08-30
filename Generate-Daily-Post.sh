@@ -1,6 +1,6 @@
 #!/bin/bash
 
-path=/root/reddit/daily-post
+path=/opt/reddit/SeattleRedditBot
 daily_base_text=$path/daily-post.body.base
 daily_weather_file=$path/today-weather.txt
 daily_footer=$path/daily-post.body.footer
