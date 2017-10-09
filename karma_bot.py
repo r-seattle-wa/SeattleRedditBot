@@ -1,10 +1,12 @@
 #!/usr/bin/env python
 
-import discord
 import asyncio
+import discord
+import operator
 import praw
 
 from bot import *
+from collections import defaultdict
 
 client = discord.Client()
 
@@ -23,11 +25,22 @@ async def on_ready():
 
 @client.event
 async def on_message(message):
+
+    def gen_karma_hash(user):
+        karma = defaultdict(int)
+        u = reddit.redditor(user)
+    
+        for c in u.comments.new(limit=None):
+            karma[c.subreddit.display_name] += c.score
+
+        return karma
+            
+
     if message.author == client.user:
         return
 
     if message.content.startswith('!karma'):
-        user = message.content[len('!karma '):].strip()
+        user = message.content.split()[1]
         karma = 0
         u = reddit.redditor(user)
 
@@ -36,5 +49,23 @@ async def on_message(message):
                 karma += c.score
 
         await client.send_message(message.channel, 'User {} has {} karma in r/SeattleWA'.format(user, karma))
+
+    if message.content.startswith('!topkarma'):
+        user = message.content.split()[1]
+        karma = gen_karma_hash(user)
+
+        top_five = sorted(karma.items(), key=operator.itemgetter(1), reverse=True)[:5]
+
+        await client.send_message(message.channel, 'Top 5 karma for user {}: {}'.format(user, top_five))
+
+        
+
+    if message.content.startswith('!bottomkarma'):
+        user = message.content.split()[1]
+        karma = gen_karma_hash(user)
+
+        bottom_five = sorted(karma.items(), key=operator.itemgetter(1))[:5]
+
+        await client.send_message(message.channel, 'Bottom 5 karma for user {}: {}'.format(user, bottom_five))
 
 client.run(DISCORD_TOKEN)
