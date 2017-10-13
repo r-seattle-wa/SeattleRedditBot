@@ -1,0 +1,5 @@
+beautifulsoup4==4.6.0
+discord.py==0.16.12
+Jinja2==2.9.6
+praw==5.1.0
+requests==2.18.4
