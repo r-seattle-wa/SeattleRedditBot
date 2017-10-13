@@ -17,7 +17,7 @@ reddit = praw.Reddit(client_id=CLIENT_ID,
                     user_agent=USER_AGENT,
                     username=USERNAME)
 
-subreddit = reddit.subreddit('SeattleWARedditBot')
+subreddit = reddit.subreddit('SeattleWA')
 
 now = datetime.datetime.now()
 
@@ -25,7 +25,7 @@ def get_weather():
     resp = requests.get('http://forecast.weather.gov/MapClick.php?lat=47.62&lon=-122.36&unit=0&lg=english&FcstType=text&TextType=1')
     doc = resp.content
     soup_doc = BeautifulSoup(doc, 'html.parser')
-    weather_info = soup_doc.findAll('table')[1]
+    weather_info = soup_doc.find_all('table')[1]
     forecast = weather_info.contents[0].text
     reddit_comment = '* ' + str.replace(forecast, '\n\n',"\n* ")[:-3]
 
