@@ -26,8 +26,10 @@ def get_weather():
     doc = resp.content
     soup_doc = BeautifulSoup(doc, 'html.parser')
     weather_info = soup_doc.find_all('table')[1]
-    forecast = weather_info.contents[0].text
-    reddit_comment = '* ' + str.replace(forecast, '\n\n',"\n* ")[:-3]
+    forecast = str(weather_info.contents[0]).split("<br/>\n<br/>")
+    top_three = '<br/>\n<br/>'.join(str(x) for x in forecast[1:3])
+    top_three_doc = BeautifulSoup(top_three, 'html.parser')
+    reddit_comment = '* ' + str.replace(top_three_doc.text, '\n\n',"\n* ")[:-3]
 
     return(reddit_comment)
 
@@ -37,9 +39,8 @@ def gen_post():
 
     return(template.render(forecast=get_weather()))
 
-
-subreddit.submit(title=now.strftime("Seattle Reddit Community Open Chat, %A, %B %d, %Y"), 
+subreddit.submit(title=now.strftime("Seattle Reddit Community Open Chat, %A, %B %d, %Y"),
                  selftext=gen_post(),
-                 url=None, 
-                 resubmit=True, 
+                 url=None,
+                 resubmit=True,
                  send_replies=False)
