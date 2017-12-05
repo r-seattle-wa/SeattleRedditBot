@@ -26,11 +26,11 @@ def get_weather():
     resp = requests.get('http://forecast.weather.gov/MapClick.php?lat=47.62&lon=-122.36&unit=0&lg=english&FcstType=text&TextType=1')
     doc = resp.content
     soup_doc = BeautifulSoup(doc, 'html.parser')
-    weather_info = soup_doc.find_all('table')[1].contents[0].contents[0]
+    weather_info = soup_doc.find_all('table')[1]
     reddit_comment = ''
-    if len(weather_info.find_all('div')) > 0:
+    if weather_info.find_all('div'):
         advisories = weather_info.div.extract().find_all('a')
-        reddit_comment += '* Advisories: \n'
+        reddit_comment += '* Advisories:\n'
         for advis in advisories:
             reddit_comment += ' * {}\n'.format(advis.span.string)
     forecast = str(weather_info).split("<br/>\n<br/>")
