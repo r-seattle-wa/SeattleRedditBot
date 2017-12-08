@@ -32,7 +32,7 @@ def get_weather():
         advisories = weather_info.div.extract().find_all('a')
         reddit_comment += '* Advisories:\n'
         for advis in advisories:
-            reddit_comment += ' * {}\n'.format(advis.span.string)
+            reddit_comment += ' * [{}](http://forecast.weather.gov/{})\n'.format(advis.span.string, advis.get('href'))
     forecast = str(weather_info).split("<br/>\n<br/>")
     top_three = '<br/>\n<br/>'.join(str(x) for x in forecast[1:5])
     top_three_doc = BeautifulSoup(top_three, 'html.parser')
