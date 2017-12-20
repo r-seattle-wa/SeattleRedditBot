@@ -126,9 +126,6 @@ def gen_post():
     return template.render(forecast=get_weather(), qotd=quote_of_the_day)
 
 
-print(gen_post())
-
-
 subreddit.submit(title=now.strftime("Seattle Reddit Community Open Chat, %A, %B %d, %Y"),
                  selftext=gen_post(),
                  url=None,
