@@ -10,11 +10,12 @@ import daily_markov
 
 from bot import *
 from bs4 import BeautifulSoup
-from jinja2 import Environment, FileSystemLoader
 
-reddit = praw.Reddit(client_id="56kcgYhz6eiiYg",
-                    client_secret="Kspq0rLBfT_Z6D6V02YfeyDoVvg",
-                    user_agent="script:SeattleWaBotChanges:1 (by /u/atreides_zero)")
+reddit = praw.Reddit(client_id=CLIENT_ID,
+                    client_secret=CLIENT_SECRET,
+                    password=PASSWORD,
+                    user_agent=USER_AGENT,
+                    username=USERNAME)
 
 subreddit = reddit.subreddit(SUB)
 
@@ -44,13 +45,11 @@ def gen_post():
     j2_env = Environment(loader=FileSystemLoader('./templates'),trim_blocks=True)
     template = j2_env.get_template('daily_post.j2')
 
-    return template.render(forecast=get_weather(), qotd=daily_markov.get_quote(subreddit,SUB))
+    return template.render(forecast=get_weather(), qotd=daily_markov.get_markov(subreddit, SUB))
 
 
-print(gen_post())
-
-#subreddit.submit(title=now.strftime("Seattle Reddit Community Open Chat, %A, %B %d, %Y"),
-#                 selftext=gen_post(),
-#                 url=None,
-#                 resubmit=True,
-#                 send_replies=False)
+subreddit.submit(title=now.strftime("Seattle Reddit Community Open Chat, %A, %B %d, %Y"),
+                 selftext=gen_post(),
+                 url=None,
+                 resubmit=True,
+                 send_replies=False)
