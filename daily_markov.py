@@ -8,6 +8,7 @@ import re
 import random
 
 from bot import *
+from haiku import Haiku
 
 FOOTER = '\n\n-----\n\n[^^Info](https://github.com/trambelus/UserSim) ^^| [^^Subreddit](/r/User_Simulator)'
 
@@ -26,9 +27,9 @@ class PText(markovify.Text):
         return True
 
 
-def get_history(subreddit):
+def get_history(subreddit, limit):
     try:
-        comments = subreddit.comments(limit=1000)
+        comments = subreddit.comments(limit=limit)
         if comments is None:
             return None, None, None
         c_finished = False
@@ -56,7 +57,7 @@ def get_history(subreddit):
 
 
 def get_markov(subreddit, SUB):
-    (history, num_comments, sentence_avg) = get_history(subreddit)
+    (history, num_comments, sentence_avg) = get_history(subreddit, 1000)
     try:
         model = PText(history, state_size=STATE_SIZE)
     except IndexError:
@@ -79,3 +80,19 @@ def get_quote(subreddit, SUB):
                 return '> {}\n\n> ~ {}'.format(unidecode(' '.join(quote_r)), '/r/{}'.format(SUB))
         else:
             return ""
+
+
+def get_haiku(subreddit):
+    (history, num_comments, sentence_avg) = get_history(subreddit, 5000)
+    my_haiku = Haiku(history)
+    my_haiku.generateHaiku()
+    haiku_list = my_haiku.getHaikuList()
+    formatted_haiku = ""
+    if haiku_list:  # if list is not empty:
+        for line in haiku_list:
+            formatted_line = "> *"
+            for word in line:
+                formatted_line = "{}{} ".format(formatted_line, word)
+            formatted_line = "{}* \n\n".format(formatted_line[:-1])
+            formatted_haiku = "{}{}".format(formatted_haiku, formatted_line)
+    return formatted_haiku
