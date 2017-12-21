@@ -10,6 +10,7 @@ import daily_markov
 
 from bot import *
 from bs4 import BeautifulSoup
+from jinja2 import Environment, FileSystemLoader
 
 reddit = praw.Reddit(client_id=CLIENT_ID,
                     client_secret=CLIENT_SECRET,
