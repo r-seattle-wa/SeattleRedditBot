@@ -46,9 +46,11 @@ def gen_post():
     j2_env = Environment(loader=FileSystemLoader('./templates'),trim_blocks=True)
     template = j2_env.get_template('daily_post.j2')
 
-    quote_of_the_day = daily_markov.get_quote(subreddit, SUB)
+    quote_of_the_day = ""
     if now.weekday() == 4:  # Friday is Fri-ku-day
         quote_of_the_day = daily_markov.get_haiku(subreddit)
+    else:
+        quote_of_the_day = daily_markov.get_quote(subreddit, SUB)
 
     return template.render(forecast=get_weather(), qotd=quote_of_the_day)
 
