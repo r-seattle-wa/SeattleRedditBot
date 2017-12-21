@@ -46,7 +46,7 @@ def gen_post():
     j2_env = Environment(loader=FileSystemLoader('./templates'),trim_blocks=True)
     template = j2_env.get_template('daily_post.j2')
 
-    return template.render(forecast=get_weather(), qotd=daily_markov.get_markov(subreddit, SUB))
+    return template.render(forecast=get_weather(), qotd=daily_markov.get_quote(subreddit, SUB))
 
 
 subreddit.submit(title=now.strftime("Seattle Reddit Community Open Chat, %A, %B %d, %Y"),
