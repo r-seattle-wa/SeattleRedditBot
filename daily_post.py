@@ -37,7 +37,7 @@ def get_weather():
     forecast = str(weather_info).split("<br/>\n<br/>")
     top_three = '<br/>\n<br/>'.join(str(x) for x in forecast[1:5])
     top_three_doc = BeautifulSoup(top_three, 'html.parser')
-    reddit_comment += '* ' + str.replace(top_three_doc.text, '\n\n', "\n* ")[:-3]
+    reddit_comment += '* ' + str.replace(top_three_doc.text, '\n\n', "\n* ")[:-1]
 
     return reddit_comment
 
