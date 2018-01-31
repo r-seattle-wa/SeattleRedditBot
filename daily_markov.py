@@ -1,14 +1,14 @@
 
+import markovify
 import praw
+import random
+import re
 import requests
 import time
-import markovify
-from unidecode import unidecode
-import re
-import random
 
 from bot import *
 from haiku import Haiku
+from unidecode import unidecode
 
 FOOTER = '\n\n-----\n\n[^^Info](https://github.com/trambelus/UserSim) ^^| [^^Subreddit](/r/User_Simulator)'
 

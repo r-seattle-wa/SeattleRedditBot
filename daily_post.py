@@ -1,11 +1,12 @@
 #!/usr/bin/env python
 
+import calendar
+import daily_markov
 import datetime
 import jinja2
 import praw
 import requests
 import time
-import daily_markov
 
 
 from bot import *
@@ -22,6 +23,8 @@ subreddit = reddit.subreddit(SUB)
 
 now = datetime.datetime.now()
 
+WEEKDAY = calendar.day_name[now.weekday()]
+
 
 def get_weather():
     resp = requests.get('http://forecast.weather.gov/MapClick.php?lat=47.62&lon=-122.36&unit=0&lg=english&FcstType=text&TextType=1')
@@ -37,7 +40,7 @@ def get_weather():
     forecast = str(weather_info).split("<br/>\n<br/>")
     top_three = '<br/>\n<br/>'.join(str(x) for x in forecast[1:5])
     top_three_doc = BeautifulSoup(top_three, 'html.parser')
-    reddit_comment += '* ' + str.replace(top_three_doc.text, '\n\n', "\n* ")[:-1]
+    reddit_comment += '* {}'.format(str.replace(top_three_doc.text, '\n\n', "\n* ")[:-1])
 
     return reddit_comment
 
@@ -52,7 +55,7 @@ def gen_post():
     else:
         quote_of_the_day = daily_markov.get_quote(subreddit, SUB)
 
-    return template.render(forecast=get_weather(), qotd=quote_of_the_day)
+    return template.render(day_of_week=WEEKDAY, forecast=get_weather(), qotd=quote_of_the_day)
 
 
 subreddit.submit(title=now.strftime("Seattle Reddit Community Open Chat, %A, %B %d, %Y"),

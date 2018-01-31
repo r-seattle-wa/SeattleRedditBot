@@ -1,4 +1,5 @@
 '''
+Source: https://github.com/odemiral/Haiku-Bot
 Written By Onur Demiralay
 MIT License Copyright(c) 2015 Onur Demiralay
 Github: @odemiral

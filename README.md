@@ -6,7 +6,6 @@ All you should need is a `bot.py` config file that looks like this:
 CLIENT_ID=''
 CLIENT_SECRET=''
 DISCORD_TOKEN=''
-FOOTER=''
 PASSWORD=''
 STATE_SIZE=
 SUB=''
