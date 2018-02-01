@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-import calendar
 import daily_markov
 import datetime
 import jinja2
@@ -23,7 +22,7 @@ subreddit = reddit.subreddit(SUB)
 
 now = datetime.datetime.now()
 
-WEEKDAY = calendar.day_name[now.weekday()]
+WEEKDAY = now.weekday()
 
 
 def get_weather():
