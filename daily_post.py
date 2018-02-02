@@ -49,7 +49,7 @@ def gen_post():
     template = j2_env.get_template('daily_post.j2')
 
     quote_of_the_day = ""
-    if now.weekday() == 4:  # Friday is Fri-ku-day
+    if WEEKDAY == 4:  # Friday is Fri-ku-day
         quote_of_the_day = daily_markov.get_haiku(subreddit)
     else:
         quote_of_the_day = daily_markov.get_quote(subreddit, SUB)
