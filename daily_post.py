@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import daily_markov
 import datetime
 import jinja2
 import praw
@@ -17,9 +18,11 @@ reddit = praw.Reddit(client_id=CLIENT_ID,
                     user_agent=USER_AGENT,
                     username=USERNAME)
 
-subreddit = reddit.subreddit('SeattleWA')
+subreddit = reddit.subreddit(SUB)
 
 now = datetime.datetime.now()
+
+WEEKDAY = now.weekday()
 
 
 def get_weather():
@@ -36,7 +39,7 @@ def get_weather():
     forecast = str(weather_info).split("<br/>\n<br/>")
     top_three = '<br/>\n<br/>'.join(str(x) for x in forecast[1:5])
     top_three_doc = BeautifulSoup(top_three, 'html.parser')
-    reddit_comment += '* ' + str.replace(top_three_doc.text, '\n\n', "\n* ")[:-3]
+    reddit_comment += '* {}'.format(str.replace(top_three_doc.text, '\n\n', "\n* ")[:-1])
 
     return reddit_comment
 
@@ -45,7 +48,13 @@ def gen_post():
     j2_env = Environment(loader=FileSystemLoader('./templates'),trim_blocks=True)
     template = j2_env.get_template('daily_post.j2')
 
-    return template.render(forecast=get_weather())
+    quote_of_the_day = ""
+    if WEEKDAY == 4:  # Friday is Fri-ku-day
+        quote_of_the_day = daily_markov.get_haiku(subreddit)
+    else:
+        quote_of_the_day = daily_markov.get_quote(subreddit, SUB)
+
+    return template.render(day_of_week=WEEKDAY, forecast=get_weather(), qotd=quote_of_the_day)
 
 
 subreddit.submit(title=now.strftime("Seattle Reddit Community Open Chat, %A, %B %d, %Y"),

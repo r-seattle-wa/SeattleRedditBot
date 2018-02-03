@@ -1,5 +1,7 @@
 beautifulsoup4==4.6.0
 discord.py==0.16.12
 Jinja2==2.9.6
+markovify==0.7.0
 praw==5.1.0
 requests==2.18.4
+unidecode==0.4.21
