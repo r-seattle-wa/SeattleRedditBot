@@ -12,13 +12,13 @@ from bot import *
 from bs4 import BeautifulSoup
 from jinja2 import Environment, FileSystemLoader
 
-reddit = praw.Reddit(client_id=CLIENT_ID,
-                    client_secret=CLIENT_SECRET,
-                    password=PASSWORD,
-                    user_agent=USER_AGENT,
-                    username=USERNAME)
+reddit = praw.Reddit(client_id=REDDIT_CLIENT_ID,
+                     client_secret=REDDIT_CLIENT_SECRET,
+                     password=REDDIT_PASSWORD,
+                     user_agent=REDDIT_USER_AGENT,
+                     username=REDDIT_USERNAME)
 
-subreddit = reddit.subreddit(SUB)
+subreddit = reddit.subreddit(REDDIT_SUB)
 
 now = datetime.datetime.now()
 
@@ -26,7 +26,8 @@ WEEKDAY = now.weekday()
 
 
 def get_weather():
-    resp = requests.get('http://forecast.weather.gov/MapClick.php?lat=47.62&lon=-122.36&unit=0&lg=english&FcstType=text&TextType=1')
+    resp = requests.get(
+        'http://forecast.weather.gov/MapClick.php?lat=47.62&lon=-122.36&unit=0&lg=english&FcstType=text&TextType=1')
     doc = resp.content
     soup_doc = BeautifulSoup(doc, 'html.parser')
     weather_info = soup_doc.find_all('table')[1]
@@ -35,24 +36,27 @@ def get_weather():
         advisories = weather_info.div.extract().find_all('a')
         reddit_comment += '* Advisories:\n'
         for advis in advisories:
-            reddit_comment += ' * [{}](http://forecast.weather.gov/{})\n'.format(advis.span.string, advis.get('href'))
+            reddit_comment += ' * [{}](http://forecast.weather.gov/{})\n'.format(
+                advis.span.string, advis.get('href'))
     forecast = str(weather_info).split("<br/>\n<br/>")
     top_three = '<br/>\n<br/>'.join(str(x) for x in forecast[1:5])
     top_three_doc = BeautifulSoup(top_three, 'html.parser')
-    reddit_comment += '* {}'.format(str.replace(top_three_doc.text, '\n\n', "\n* ")[:-1])
+    reddit_comment += '* {}'.format(str.replace(
+        top_three_doc.text, '\n\n', "\n* ")[1:-1])
 
     return reddit_comment
 
 
 def gen_post():
-    j2_env = Environment(loader=FileSystemLoader('./templates'),trim_blocks=True)
+    j2_env = Environment(loader=FileSystemLoader(
+        './templates'), trim_blocks=True)
     template = j2_env.get_template('daily_post.j2')
 
     quote_of_the_day = ""
     if WEEKDAY == 4:  # Friday is Fri-ku-day
         quote_of_the_day = daily_markov.get_haiku(subreddit)
     else:
-        quote_of_the_day = daily_markov.get_quote(subreddit, SUB)
+        quote_of_the_day = daily_markov.get_quote(subreddit, REDDIT_SUB)
 
     return template.render(day_of_week=WEEKDAY, forecast=get_weather(), qotd=quote_of_the_day)
 

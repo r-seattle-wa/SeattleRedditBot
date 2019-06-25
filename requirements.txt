@@ -1,7 +1,7 @@
-beautifulsoup4==4.6.0
-discord.py==0.16.12
-Jinja2==2.9.6
-markovify==0.7.0
-praw==5.1.0
-requests==2.18.4
-unidecode==0.4.21
+beautifulsoup4==4.7.1
+discord.py==1.2.2
+Jinja2==2.10.1
+markovify==0.7.1
+praw==6.3.1
+requests==2.22.0
+unidecode==1.1.1
