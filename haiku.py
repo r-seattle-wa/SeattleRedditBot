@@ -5,7 +5,7 @@ Github: @odemiral
 Haiku class is responsible for generating Haikus. You can easily use this class on its own by passing string to the
 constructor.
 """
-from typing import List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 from collections import defaultdict
 import re
 import random
@@ -19,10 +19,13 @@ class Haiku:
     """
 
     def __init__(self, text: str) -> None:
-        self.text = text
-        self.multimap = defaultdict(list)
-        self.haiku_list = None  # store each line of haiku as an element of the list.
-        self.format_str()
+        self.multimap = defaultdict(list)   # type: Dict[int, List[str]]
+        # store each line of haiku as an element of the list.
+        self.haiku_list = []  # type: List[List[str]]
+
+        pattern = re.compile(r"[^\w\']")  # unicode friendly
+        text = pattern.sub(' ', text.lower())
+        self.text = text.split()
         # self.generate_haiku()
 
     # main function, that generates a 5-7-5 haiku
@@ -43,7 +46,7 @@ class Haiku:
     Return haiku in a list format. This function must be called after generateHaiku.
     """
 
-    def get_haiku_list(self) -> List[str]:
+    def get_haiku_list(self) -> List[List[str]]:
         return self.haiku_list
 
     """
@@ -87,17 +90,6 @@ class Haiku:
             word_arr.append(word)
 
         return word_arr
-
-    """
-    Formats str to get rid of special characters and split it to whitespace delimited list.
-    transforms self.text to list.
-    """
-
-    def format_str(self) -> None:
-        pattern = re.compile(r"[^\w\']")  # unicode friendly
-        self.text = pattern.sub(' ', self.text)
-        self.text = self.text.lower()
-        self.text = self.text.split()
 
     """
     Constructs MultiMap like structure where value is a list of words and key is the number of syllables in those 
@@ -167,7 +159,7 @@ class Haiku:
     def pick_random_word(self, syllable_size: int) -> Tuple[str, int]:
         rnd_size = random.randint(1, syllable_size)
         # print("@@@@RANDSIZE: ", rndSize)
-        possible_words = self.multimap[rnd_size]
+        possible_words = self.multimap[rnd_size]    # type: Optional[List[str]]
         loop_limit = 1000  # limit of how many times it should try to find a word randomly before switching to
 
         # iterative mode

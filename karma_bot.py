@@ -49,24 +49,24 @@ async def on_message(message: discord.Message) -> None:
     command, user = message_parts[0], message_parts[1]
 
     if command == '!karma':
-        karma = 0
+        sub_karma = 0
         reddit_user = reddit.redditor(user)
 
         for comment in reddit_user.comments.new(limit=None):
             if comment.subreddit.display_name == 'SeattleWA':
-                karma += comment.score
+                sub_karma += comment.score
 
-        await message.channel.send_message('User {} has {} karma in r/SeattleWA'.format(user, karma))
+        await message.channel.send_message('User {} has {} karma in r/SeattleWA'.format(user, sub_karma))
 
     elif command == '!topkarma':
-        karma = get_user_subreddit_karma(user)
-        top_five = sorted(karma.items(), key=operator.itemgetter(1), reverse=True)[:5]
+        all_karma = get_user_subreddit_karma(user)
+        top_five = sorted(all_karma.items(), key=operator.itemgetter(1), reverse=True)[:5]
 
         await message.channel.send_message('Top 5 karma for user {}: {}'.format(user, top_five))
 
     elif command == '!bottomkarma':
-        karma = get_user_subreddit_karma(user)
-        bottom_five = sorted(karma.items(), key=operator.itemgetter(1))[:5]
+        all_karma = get_user_subreddit_karma(user)
+        bottom_five = sorted(all_karma.items(), key=operator.itemgetter(1))[:5]
 
         await message.channel.send_message('Bottom 5 karma for user {}: {}'.format(user, bottom_five))
 

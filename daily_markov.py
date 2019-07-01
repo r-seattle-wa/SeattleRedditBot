@@ -35,11 +35,11 @@ class PText(markovify.Text):
         return True
 
 
-def get_history(subreddit: Subreddit, limit: int) -> Tuple[Optional[str], Optional[int], Optional[float]]:
+def get_history(subreddit: Subreddit, limit: int) -> Tuple[Optional[str], int, float]:
     try:
         comments = subreddit.comments(limit=limit)
         if comments is None:
-            return None, None, None
+            return None, 0, 0
         c_finished = False
         body = []
         total_sentences = 0
@@ -58,11 +58,10 @@ def get_history(subreddit: Subreddit, limit: int) -> Tuple[Optional[str], Option
                 total_sentences = 0
         num_comments = len(body)
         sentence_avg = total_sentences / num_comments if num_comments > 0 else 0
-        body = ' '.join(body)
-        return body, num_comments, sentence_avg
+        return ' '.join(body), num_comments, sentence_avg
 
     except praw.exceptions.PRAWException:
-        return None, None, None
+        return None, 0, 0
 
 
 def get_markov(subreddit: Subreddit) -> Tuple[PText, int]:
@@ -82,8 +81,7 @@ def get_quote(subreddit: Subreddit) -> str:
                     break
                 quote_r.append(tmp_s)
                 return '> {}\n\n> ~ {}'.format(unidecode(' '.join(quote_r)), '/r/{}'.format(subreddit.display_name))
-        else:
-            return ""
+        return ""
     except IndexError:
         error_msg = "Error: subreddit '{}' is too dank to simulate.".format(subreddit.display_name)
         return error_msg + FOOTER
@@ -91,6 +89,10 @@ def get_quote(subreddit: Subreddit) -> str:
 
 def get_haiku(subreddit: Subreddit) -> str:
     (history, num_comments, sentence_avg) = get_history(subreddit, 5000)
+
+    if not history:
+        return ''
+
     my_haiku = Haiku(history)
     my_haiku.generate_haiku()
     haiku_list = my_haiku.get_haiku_list()
