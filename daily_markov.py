@@ -1,23 +1,31 @@
-
-import markovify
-import praw
+from typing import Optional, Tuple
 import random
 import re
-import requests
-import time
+
+from haiku import Haiku
+from praw.exceptions import PRAWException
+from praw.models import Subreddit
+from unidecode import unidecode
+import markovify
+import praw
 
 from bot import *
-from haiku import Haiku
-from unidecode import unidecode
 
 FOOTER = '\n\n-----\n\n[^^Info](https://github.com/trambelus/UserSim) ^^| [^^Subreddit](/r/User_Simulator)'
 
 
 class PText(markovify.Text):
 
-    def test_sentence_input(self, sentence):
+    def test_sentence_input(self, sentence: str) -> bool:
         emote_pat = re.compile(r"\[.+?\]\(\/.+?\)")
-        reject_pat = re.compile(r"(^')|('$)|\s'|'\s|([\"(\(\)\[\])])|(github.com/trambelus/UserSim)|(/r/User_Simulator)|(~\ [\w\d\-_]{3,20}\ -----)")
+        reject_pat = re.compile(r"(^')|"
+                                r"('$)|"
+                                r"\s'|"
+                                r"'\s|"
+                                r"([\"(\(\)\[\])])|"
+                                r"(github.com/trambelus/UserSim)|"
+                                r"(/r/User_Simulator)|"
+                                r"(~\ [\w\d\-_]{3,20}\ -----)")
         decoded = unidecode(sentence)
         filtered_str = re.sub(emote_pat, '', decoded).replace('  ', ' ')
         if re.search(reject_pat, filtered_str):
@@ -27,15 +35,15 @@ class PText(markovify.Text):
         return True
 
 
-def get_history(subreddit, limit):
+def get_history(subreddit: Subreddit, limit: int) -> Tuple[Optional[str], Optional[int], Optional[float]]:
     try:
         comments = subreddit.comments(limit=limit)
         if comments is None:
             return None, None, None
         c_finished = False
+        body = []
+        total_sentences = 0
         while not c_finished:
-            body = []
-            total_sentences = 0
             try:
                 for c in comments:
                     if (not c.distinguished) and ((not subreddit) or c.subreddit.display_name == subreddit):
@@ -45,31 +53,27 @@ def get_history(subreddit, limit):
                         except Exception:
                             total_sentences += 1
                 c_finished = True
-            except praw.exceptions.PRAWException as ex:
-                pass
+            except PRAWException:
+                body = []
+                total_sentences = 0
         num_comments = len(body)
         sentence_avg = total_sentences / num_comments if num_comments > 0 else 0
         body = ' '.join(body)
         return body, num_comments, sentence_avg
 
     except praw.exceptions.PRAWException:
-        pass
+        return None, None, None
 
 
-def get_markov(subreddit, SUB):
+def get_markov(subreddit: Subreddit) -> Tuple[PText, int]:
     (history, num_comments, sentence_avg) = get_history(subreddit, 1000)
-    try:
-        model = PText(history, state_size=STATE_SIZE)
-    except IndexError:
-        return "Error: subreddit '{}' is too dank to simulate.".format(SUB), 0
+    model = PText(history, state_size=STATE_SIZE)
     return model, int(sentence_avg)
 
 
-def get_quote(subreddit, SUB):
-    (model, sentence_avg) = get_markov(subreddit, SUB)
-    if isinstance(model, str):
-        return (model % '/r/' + SUB) + FOOTER
-    else:
+def get_quote(subreddit: Subreddit) -> str:
+    try:
+        (model, sentence_avg) = get_markov(subreddit)
         quote_r = []
         if sentence_avg > 0:
             for _ in range(random.randint(1, sentence_avg)):
@@ -77,16 +81,19 @@ def get_quote(subreddit, SUB):
                 if tmp_s is None:
                     break
                 quote_r.append(tmp_s)
-                return '> {}\n\n> ~ {}'.format(unidecode(' '.join(quote_r)), '/r/{}'.format(SUB))
+                return '> {}\n\n> ~ {}'.format(unidecode(' '.join(quote_r)), '/r/{}'.format(subreddit.display_name))
         else:
             return ""
+    except IndexError:
+        error_msg = "Error: subreddit '{}' is too dank to simulate.".format(subreddit.display_name)
+        return error_msg + FOOTER
 
 
-def get_haiku(subreddit):
+def get_haiku(subreddit: Subreddit) -> str:
     (history, num_comments, sentence_avg) = get_history(subreddit, 5000)
     my_haiku = Haiku(history)
-    my_haiku.generateHaiku()
-    haiku_list = my_haiku.getHaikuList()
+    my_haiku.generate_haiku()
+    haiku_list = my_haiku.get_haiku_list()
     formatted_haiku = ""
     if haiku_list:  # if list is not empty:
         for line in haiku_list:

@@ -1,31 +1,16 @@
 #!/usr/bin/env python
-
-import daily_markov
 import datetime
-import jinja2
-import praw
-import requests
-import time
 
-
-from bot import *
 from bs4 import BeautifulSoup
 from jinja2 import Environment, FileSystemLoader
+import daily_markov
+import praw
+import requests
 
-reddit = praw.Reddit(client_id=REDDIT_CLIENT_ID,
-                     client_secret=REDDIT_CLIENT_SECRET,
-                     password=REDDIT_PASSWORD,
-                     user_agent=REDDIT_USER_AGENT,
-                     username=REDDIT_USERNAME)
-
-subreddit = reddit.subreddit(REDDIT_SUB)
-
-now = datetime.datetime.now()
-
-WEEKDAY = now.weekday()
+from bot import *
 
 
-def get_weather():
+def get_weather() -> str:
     resp = requests.get(
         'http://forecast.weather.gov/MapClick.php?lat=47.62&lon=-122.36&unit=0&lg=english&FcstType=text&TextType=1')
     doc = resp.content
@@ -47,22 +32,32 @@ def get_weather():
     return reddit_comment
 
 
-def gen_post():
-    j2_env = Environment(loader=FileSystemLoader(
-        './templates'), trim_blocks=True)
+def gen_post(weekday: int) -> str:
+    j2_env = Environment(loader=FileSystemLoader('./templates'), trim_blocks=True)
     template = j2_env.get_template('daily_post.j2')
 
-    quote_of_the_day = ""
-    if WEEKDAY == 4:  # Friday is Fri-ku-day
+    if weekday == 4:  # Friday is Fri-ku-day
         quote_of_the_day = daily_markov.get_haiku(subreddit)
     else:
-        quote_of_the_day = daily_markov.get_quote(subreddit, REDDIT_SUB)
+        quote_of_the_day = daily_markov.get_quote(subreddit)
 
-    return template.render(day_of_week=WEEKDAY, forecast=get_weather(), qotd=quote_of_the_day)
+    return template.render(day_of_week=weekday, forecast=get_weather(), qotd=quote_of_the_day)
 
 
-subreddit.submit(title=now.strftime("Seattle Reddit Community Open Chat, %A, %B %d, %Y"),
-                 selftext=gen_post(),
-                 url=None,
-                 resubmit=True,
-                 send_replies=False)
+if __name__ == '__main__':
+    reddit = praw.Reddit(client_id=REDDIT_CLIENT_ID,
+                         client_secret=REDDIT_CLIENT_SECRET,
+                         password=REDDIT_PASSWORD,
+                         user_agent=REDDIT_USER_AGENT,
+                         username=REDDIT_USERNAME)
+
+    subreddit = reddit.subreddit(REDDIT_SUB)
+
+    now = datetime.datetime.now()
+    post = gen_post(now.weekday())
+
+    subreddit.submit(title=now.strftime("Seattle Reddit Community Open Chat, %A, %B %d, %Y"),
+                     selftext=post,
+                     url=None,
+                     resubmit=True,
+                     send_replies=False)
