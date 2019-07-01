@@ -3,11 +3,11 @@ import datetime
 
 from bs4 import BeautifulSoup
 from jinja2 import Environment, FileSystemLoader
-import daily_markov
 import praw
 import requests
 
 from bot import *
+import daily_markov
 
 
 def get_weather() -> str:

@@ -7,8 +7,8 @@ constructor.
 """
 from typing import Dict, List, Optional, Tuple
 from collections import defaultdict
-import re
 import random
+import re
 
 
 class Haiku:
