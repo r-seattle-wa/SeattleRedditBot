@@ -1,71 +1,75 @@
 #!/usr/bin/env python
-
-import asyncio
-import discord
+from typing import Dict
+from collections import defaultdict
 import operator
+
+import discord
 import praw
 
 from bot import *
-from collections import defaultdict
 
 client = discord.Client()
 
 reddit = praw.Reddit(client_id=CLIENT_ID,
-                    client_secret=CLIENT_SECRET,
-                    password=PASSWORD,
-                    user_agent=USER_AGENT,
-                    username=USERNAME)
+                     client_secret=CLIENT_SECRET,
+                     password=PASSWORD,
+                     user_agent=USER_AGENT,
+                     username=USERNAME)
+
 
 @client.event
-async def on_ready():
+async def on_ready() -> None:
     print('Logged in as')
     print(client.user.name)
     print(client.user.id)
     print('------')
 
+
+def get_user_subreddit_karma(user: str) -> Dict[str, int]:
+    karma = defaultdict(int)
+    reddit_user = reddit.redditor(user)
+
+    for comment in reddit_user.comments.new(limit=None):
+        karma[comment.subreddit.display_name] += comment.score
+
+    return karma
+
+
 @client.event
-async def on_message(message):
-
-    def gen_karma_hash(user):
-        karma = defaultdict(int)
-        u = reddit.redditor(user)
-    
-        for c in u.comments.new(limit=None):
-            karma[c.subreddit.display_name] += c.score
-
-        return karma
-            
+async def on_message(message: discord.Message) -> None:
 
     if message.author == client.user:
         return
 
-    if message.content.startswith('!karma'):
-        user = message.content.split()[1]
-        karma = 0
-        u = reddit.redditor(user)
+    message_parts = message.content.split()
 
-        for c in u.comments.new(limit=None):
-            if c.subreddit.display_name == 'SeattleWA':
-                karma += c.score
+    if len(message_parts) < 2:
+        return
 
-        await client.send_message(message.channel, 'User {} has {} karma in r/SeattleWA'.format(user, karma))
+    command, user = message_parts[0], message_parts[1]
 
-    if message.content.startswith('!topkarma'):
-        user = message.content.split()[1]
-        karma = gen_karma_hash(user)
+    if command == '!karma':
+        sub_karma = 0
+        reddit_user = reddit.redditor(user)
 
-        top_five = sorted(karma.items(), key=operator.itemgetter(1), reverse=True)[:5]
+        for comment in reddit_user.comments.new(limit=None):
+            if comment.subreddit.display_name == 'SeattleWA':
+                sub_karma += comment.score
 
-        await client.send_message(message.channel, 'Top 5 karma for user {}: {}'.format(user, top_five))
+        await message.channel.send_message('User {} has {} karma in r/SeattleWA'.format(user, sub_karma))
 
-        
+    elif command == '!topkarma':
+        all_karma = get_user_subreddit_karma(user)
+        top_five = sorted(all_karma.items(), key=operator.itemgetter(1), reverse=True)[:5]
 
-    if message.content.startswith('!bottomkarma'):
-        user = message.content.split()[1]
-        karma = gen_karma_hash(user)
+        await message.channel.send_message('Top 5 karma for user {}: {}'.format(user, top_five))
 
-        bottom_five = sorted(karma.items(), key=operator.itemgetter(1))[:5]
+    elif command == '!bottomkarma':
+        all_karma = get_user_subreddit_karma(user)
+        bottom_five = sorted(all_karma.items(), key=operator.itemgetter(1))[:5]
 
-        await client.send_message(message.channel, 'Bottom 5 karma for user {}: {}'.format(user, bottom_five))
+        await message.channel.send_message('Bottom 5 karma for user {}: {}'.format(user, bottom_five))
 
-client.run(DISCORD_TOKEN)
+
+if __name__ == '__main__':
+    client.run(DISCORD_TOKEN)
