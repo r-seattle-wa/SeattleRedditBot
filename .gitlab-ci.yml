@@ -1,0 +1,66 @@
+.docker_job: &docker_job
+  image: docker
+  services:
+    - docker:dind
+  variables:
+    DOCKER_HOST: tcp://docker:2375/
+    DOCKER_DRIVER: overlay2
+
+variables:
+  AWS_ACCESS_KEY_ID: ${ECS_ACCESS_KEY}
+  AWS_SECRET_ACCESS_KEY: ${ECS_SECRET_KEY}
+  AWS_DEFAULT_REGION: us-west-2
+  ECR_REPO: 035307327384.dkr.ecr.us-west-2.amazonaws.com/seattlewa
+
+stages:
+  - ecr
+  - docker
+  - fargate
+
+ECR Login:
+  stage: ecr
+  only:
+    - master
+  image: mikesir87/aws-cli
+  script:
+    - aws ecr get-login --no-include-email > ecr_login.sh
+  artifacts:
+    expire_in: 1 days
+    paths:
+      - ecr_login.sh
+
+Build Test Image:
+  <<: *docker_job
+  stage: docker
+  except:
+    - master
+  variables:
+    DOCKER_HOST: tcp://docker:2375/
+    DOCKER_DRIVER: overlay2
+  script:
+    - echo ${BOT_CONFIG} > bot.py
+    - docker build -t ${ECR_REPO}:${CI_COMMIT_SHORT_SHA} .
+
+Build Docker Image:
+  <<: *docker_job
+  stage: docker
+  only:
+    - master
+  dependencies:
+    - ECR Login
+  script:
+    - echo ${BOT_CONFIG} > bot.py
+    - sh ecr_login.sh
+    - docker build -t ${ECR_REPO}:${CI_COMMIT_SHORT_SHA} .
+    - docker push ${ECR_REPO}:${CI_COMMIT_SHORT_SHA}
+
+Update Fargate:
+  stage: fargate
+  only:
+    - master
+  image: mikesir87/aws-cli
+  script:
+    - sed -i "s?%%DOCKER_TAG%%?${CI_COMMIT_SHORT_SHA}?" aws_resources/ecs_task_definition.json
+    - TASK_DEF_ARN=$(aws ecs register-task-definition --cli-input-json file://aws_resources/ecs_task_definition.json --query 'taskDefinition.taskDefinitionArn' --output text)
+    - sed -i "s?%%TASK_DEF_ARN%%?${TASK_DEF_ARN}?" aws_resources/fargate_event_target.json
+    - aws events put-targets --rule daily_post_test --cli-input-json file://aws_resources/fargate_event_target.json
