@@ -39,10 +39,7 @@ Build Docker Image:
 Update Fargate:
   stage: fargate
   image: mikesir87/aws-cli
-  dependencies:
-    - Build Docker Image
   script:
-    - DOCKER_TAG=$(cat tag.out)
     - sed -i "s/%%DOCKER_TAG%%/${CI_COMMIT_SHORT_SHA}/" aws_resources/ecs_task_definition.json
     - TASK_DEF_ARN=$(aws ecs register-task-definition --cli-input-json file://aws_resources/ecs_task_definition.json  --profile joeskyyy --query 'taskDefinition.taskDefinitionArn' --output text)
     - sed -i "s/%%TASK_DEF_ARN%%/${TASK_DEF_ARN}/" aws_resources/fargate_event_target.json
