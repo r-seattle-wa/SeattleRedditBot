@@ -1,6 +1,7 @@
 variables:
   AWS_ACCESS_KEY_ID: ${ECS_ACCESS_KEY}
   AWS_SECRET_ACCESS_KEY: ${ECS_SECRET_KEY}
+  AWS_DEFAULT_REGION: us-west-2
   ECR_REPO: 035307327384.dkr.ecr.us-west-2.amazonaws.com/seattlewa
 
 stages:
