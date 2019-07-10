@@ -43,7 +43,9 @@ def get_weather_emoji(period: Dict[str, Any]) -> Optional[str]:
 
     rainy_regex = r'.*rain.*'
     cloudy_regex = r'(?:mostly )?cloudy'
-    partly_cloudy_regex = r'partly sunny'
+    partly_cloudy_regex = r'partly (?:sunny|cloudy)'
+    sunny_regex = r'(?:mostly )?sunny'
+    thunderstorm_regex = r'.*showers and thunderstorms.*'
 
     if re.fullmatch(rainy_regex, short_forecast):
         return Emojis.Rain
@@ -51,6 +53,10 @@ def get_weather_emoji(period: Dict[str, Any]) -> Optional[str]:
         return Emojis.Cloudy
     elif re.fullmatch(partly_cloudy_regex, short_forecast):
         return Emojis.PartlyCloudy
+    elif re.fullmatch(sunny_regex, short_forecast):
+        return Emojis.Sunny
+    elif re.fullmatch(thunderstorm_regex, short_forecast):
+        return Emojis.RainAndLightning
     else:
         return None
 
