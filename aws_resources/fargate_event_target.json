@@ -1,7 +1,7 @@
 {
     "Targets": [
         {
-            "Id": "daily_post_test",
+            "Id": "daily_post",
             "Arn": "arn:aws:ecs:us-west-2:035307327384:cluster/redditbot",
             "RoleArn": "arn:aws:iam::035307327384:role/ecsEventsRole",
             "Input": "{}",

@@ -1,11 +1,11 @@
 {
-    "family": "daily_post_test",
+    "family": "daily_post",
     "taskRoleArn": "arn:aws:iam::035307327384:role/ecsTaskExecutionRole",
     "executionRoleArn": "arn:aws:iam::035307327384:role/ecsTaskExecutionRole",
     "networkMode": "awsvpc",
     "containerDefinitions": [
         {
-            "name": "daily_post_test",
+            "name": "daily_post",
             "image": "035307327384.dkr.ecr.us-west-2.amazonaws.com/seattlewa:%%DOCKER_TAG%%",
             "cpu": 256,
             "memoryReservation": 512,
@@ -17,7 +17,7 @@
             "logConfiguration": {
                 "logDriver": "awslogs",
                 "options": {
-                    "awslogs-group": "/ecs/daily_post_test",
+                    "awslogs-group": "/ecs/daily_post",
                     "awslogs-region": "us-west-2",
                     "awslogs-stream-prefix": "ecs"
                 }

@@ -1,3 +1,5 @@
+[![pipeline status](https://gitlab.com/seattlewa/SeattleRedditBot/badges/master/pipeline.svg)](https://gitlab.com/seattlewa/SeattleRedditBot/commits/master)
+
 The gist:
 
 All you should need is a `bot.py` config file that looks like this:
