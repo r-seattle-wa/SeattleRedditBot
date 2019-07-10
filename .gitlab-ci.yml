@@ -1,3 +1,11 @@
+.docker_job: &docker_job
+  image: docker
+  services:
+    - docker:dind
+  variables:
+    DOCKER_HOST: tcp://docker:2375/
+    DOCKER_DRIVER: overlay2
+
 variables:
   AWS_ACCESS_KEY_ID: ${ECS_ACCESS_KEY}
   AWS_SECRET_ACCESS_KEY: ${ECS_SECRET_KEY}
@@ -21,19 +29,25 @@ ECR Login:
     paths:
       - ecr_login.sh
 
-
-Build Docker Image:
+Build Test Image:
+  <<: *docker_job
   stage: docker
-  only:
+  except:
     - master
-  image: docker
-  services:
-    - docker:dind
-  dependencies:
-    - ECR Login
   variables:
     DOCKER_HOST: tcp://docker:2375/
     DOCKER_DRIVER: overlay2
+  script:
+    - echo ${BOT_CONFIG} > bot.py
+    - docker build -t ${ECR_REPO}:${CI_COMMIT_SHORT_SHA} .
+
+Build Docker Image:
+  <<: *docker_job
+  stage: docker
+  only:
+    - master
+  dependencies:
+    - ECR Login
   script:
     - echo ${BOT_CONFIG} > bot.py
     - sh ecr_login.sh
