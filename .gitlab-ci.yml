@@ -4,19 +4,35 @@ variables:
   ECR_REPO: 035307327384.dkr.ecr.us-west-2.amazonaws.com/seattlewa
 
 stages:
+  - ecr
   - docker
   - fargate
 
+ECR Login:
+  stage: ecr
+  image: mikesir87/aws-cli
+  script:
+    - aws ecr get-login --no-include-email > ecr_login.sh
+  artifacts:
+    expire_in: 1 days
+    paths:
+      - ecr_login.sh
+
+
 Build Docker Image:
   stage: docker
+  image: docker
+  dependencies:
+    - ECR Login
   script:
-    - $(aws ecr get-login --no-include-email)
     - echo ${BOT_CONFIG} > bot.py
+    - sh ecr_login.sh
     - docker build -t ${ECR_REPO}:${CI_COMMIT_SHORT_SHA} .
     - docker push ${ECR_REPO}:${CI_COMMIT_SHORT_SHA}
 
 Update Fargate:
   stage: fargate
+  image: mikesir87/aws-cli
   dependencies:
     - Build Docker Image
   script:
