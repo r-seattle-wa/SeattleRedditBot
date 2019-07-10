@@ -63,4 +63,4 @@ Update Fargate:
     - sed -i "s?%%DOCKER_TAG%%?${CI_COMMIT_SHORT_SHA}?" aws_resources/ecs_task_definition.json
     - TASK_DEF_ARN=$(aws ecs register-task-definition --cli-input-json file://aws_resources/ecs_task_definition.json --query 'taskDefinition.taskDefinitionArn' --output text)
     - sed -i "s?%%TASK_DEF_ARN%%?${TASK_DEF_ARN}?" aws_resources/fargate_event_target.json
-    - aws events put-targets --rule daily_post_test --cli-input-json file://aws_resources/fargate_event_target.json
+    - aws events put-targets --rule daily_post --cli-input-json file://aws_resources/fargate_event_target.json
