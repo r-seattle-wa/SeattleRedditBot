@@ -1,0 +1,27 @@
+variables:
+  AWS_ACCESS_KEY_ID: ${ECS_ACCESS_KEY}
+  AWS_SECRET_ACCESS_KEY: ${ECS_SECRET_KEY}
+  ECR_REPO: 035307327384.dkr.ecr.us-west-2.amazonaws.com/seattlewa
+
+stages:
+  - docker
+  - fargate
+
+Build Docker Image:
+  stage: docker
+  script:
+    - $(aws ecr get-login --no-include-email)
+    - echo ${BOT_CONFIG} > bot.py
+    - docker build -t ${ECR_REPO}:${CI_COMMIT_SHORT_SHA} .
+    - docker push ${ECR_REPO}:${CI_COMMIT_SHORT_SHA}
+
+Update Fargate:
+  stage: fargate
+  dependencies:
+    - Build Docker Image
+  script:
+    - DOCKER_TAG=$(cat tag.out)
+    - sed -i "s/%%DOCKER_TAG%%/${CI_COMMIT_SHORT_SHA}/" aws_resources/ecs_task_definition.json
+    - TASK_DEF_ARN=$(aws ecs register-task-definition --cli-input-json file://aws_resources/ecs_task_definition.json  --profile joeskyyy --query 'taskDefinition.taskDefinitionArn' --output text)
+    - sed -i "s/%%TASK_DEF_ARN%%/${TASK_DEF_ARN}/" aws_resources/fargate_event_target.json
+    - aws events put-targets --rule daily_post_test --cli-input-json file://aws_resources/fargate_event_target.json

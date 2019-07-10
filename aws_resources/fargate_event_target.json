@@ -1,0 +1,28 @@
+{
+    "Targets": [
+        {
+            "Id": "daily_post_test",
+            "Arn": "arn:aws:ecs:us-west-2:035307327384:cluster/redditbot",
+            "RoleArn": "arn:aws:iam::035307327384:role/ecsEventsRole",
+            "Input": "{}",
+            "EcsParameters": {
+                "TaskDefinitionArn": "%%TASK_DEF_ARN%%",
+                "TaskCount": 1,
+                "LaunchType": "FARGATE",
+                "NetworkConfiguration": {
+                    "awsvpcConfiguration": {
+                        "Subnets": [
+                            "subnet-affd96f5",
+                            "subnet-da6ad891"
+                        ],
+                        "SecurityGroups": [
+                            "sg-0613214fc39a4619f"
+                        ],
+                        "AssignPublicIp": "ENABLED"
+                    }
+                },
+                "PlatformVersion": "LATEST"
+            }
+        }
+    ]
+}
