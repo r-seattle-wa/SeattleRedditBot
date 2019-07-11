@@ -48,7 +48,7 @@ Build Docker Image:
   dependencies:
     - ECR Login
   script:
-    - echo ${BOT_CONFIG} > bot.py
+    - echo "${BOT_CONFIG}" > bot.py
     - sh ecr_login.sh
     - docker build -t ${ECR_REPO}:${CI_COMMIT_SHORT_SHA} .
     - docker push ${ECR_REPO}:${CI_COMMIT_SHORT_SHA}
