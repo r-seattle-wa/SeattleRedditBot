@@ -34,7 +34,7 @@ def _convert_time_str_to_datetime(time: str) -> datetime.datetime:
 
 def get_weather_emoji(period: Dict[str, Any]) -> Optional[str]:
     # only get the first phrase in the short forecast
-    match = re.fullmatch(r'((?:[A-Z]\w+ )+[A-Z]\w+)', period['shortForecast'])
+    match = re.match(r'^((?:[A-Z]\w+ )+[A-Z]\w+)', period['shortForecast'])
     if match is None:
         return None
 
@@ -73,8 +73,9 @@ def get_weather(client: praw.Reddit) -> str:
 
     # TODO: I vaguely remember there being a way to get advisories. Can't find it right now for some reason though
     current_date = datetime.date.today()
+    tomorrow = current_date + datetime.timedelta(days=1)
     forecast_periods = [period for period in data['properties']['periods']
-                        if _convert_time_str_to_datetime(period['startTime']).date() >= current_date][:4]
+                        if current_date <= _convert_time_str_to_datetime(period['startTime']).date() <= tomorrow]
     comment_lines = []
     emoji_fails = []
 
