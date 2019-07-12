@@ -120,10 +120,8 @@ if __name__ == '__main__':
     now = datetime.datetime.now()
     post = gen_post(now.weekday(), reddit)
 
-    """
     subreddit.submit(title=now.strftime("Seattle Reddit Community Open Chat, %A, %B %d, %Y"),
                      selftext=post,
                      url=None,
                      resubmit=True,
                      send_replies=False)
-    """
