@@ -6,6 +6,13 @@
     DOCKER_HOST: tcp://docker:2375/
     DOCKER_DRIVER: overlay2
 
+.ignore_files: &ignore_files
+  except:
+    changes:
+      - "*.md"
+      - .dockerignore
+      - .gitignore
+
 variables:
   AWS_ACCESS_KEY_ID: ${ECS_ACCESS_KEY}
   AWS_SECRET_ACCESS_KEY: ${ECS_SECRET_KEY}
@@ -18,6 +25,7 @@ stages:
   - fargate
 
 ECR Login:
+  <<: *ignore_files
   stage: ecr
   only:
     - master
@@ -33,7 +41,12 @@ Build Test Image:
   <<: *docker_job
   stage: docker
   except:
-    - master
+    refs:
+      - master
+    changes:
+      - "*.md"
+      - .dockerignore
+      - .gitignore
   variables:
     DOCKER_HOST: tcp://docker:2375/
     DOCKER_DRIVER: overlay2
@@ -41,6 +54,7 @@ Build Test Image:
     - docker build -t ${ECR_REPO}:${CI_COMMIT_SHORT_SHA} .
 
 Build Docker Image:
+  <<: *ignore_files
   <<: *docker_job
   stage: docker
   only:
@@ -54,6 +68,7 @@ Build Docker Image:
     - docker push ${ECR_REPO}:${CI_COMMIT_SHORT_SHA}
 
 Update Fargate:
+  <<: *ignore_files
   stage: fargate
   only:
     - master
