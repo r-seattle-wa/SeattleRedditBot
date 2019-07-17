@@ -111,7 +111,7 @@ def gen_post(weekday: int, client: praw.Reddit) -> str:
     except Exception as e:  # Lazy catch all exceptions
         print('Error in forecast: {}'.format(e))
         print(e.__traceback__)
-        forecast = '{} Could not fetch weather; Government must be shutdown.'.format(
+        forecast = '{} Could not fetch weather; Government must be shut down.'.format(
             Emojis.FearfulFace)
 
     return template.render(day_of_week=weekday, forecast=forecast, qotd=quote_of_the_day)
