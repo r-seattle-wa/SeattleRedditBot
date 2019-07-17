@@ -3,7 +3,6 @@ from typing import Any, Dict, Optional
 import datetime
 import json
 import re
-import sys
 
 from jinja2 import Environment, FileSystemLoader
 import praw
@@ -109,8 +108,9 @@ def gen_post(weekday: int, client: praw.Reddit) -> str:
 
     try:
         forecast = get_weather(client)
-    except:  # Lazy catch all exceptions
-        print('Error in forecast: {}'.format(sys.exc_info()[0]))
+    except Exception as e:  # Lazy catch all exceptions
+        print('Error in forecast: {}'.format(e))
+        print(e.__traceback__)
         forecast = '{} Could not fetch weather; Government must be shutdown.'.format(
             Emojis.FearfulFace)
 
