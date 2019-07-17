@@ -3,6 +3,7 @@ from typing import Any, Dict, Optional
 import datetime
 import json
 import re
+import sys
 
 from jinja2 import Environment, FileSystemLoader
 import praw
@@ -25,6 +26,7 @@ class Emojis:
     Snow = '\U0001F328'
     Lightning = '\U0001F329'
     Fog = '\U0001F32B'
+    FearfulFace = '\U0001F628'
 
 
 def _convert_time_str_to_datetime(time: str) -> datetime.datetime:
@@ -90,12 +92,14 @@ def get_weather(client: praw.Reddit) -> str:
 
     # We might not have been able to emojify the weather, send a PM so that we can fix it
     if emoji_fails:
-        client.redditor('wchill').message('Emojification failed!', json.dumps(emoji_fails))
+        client.redditor('wchill').message(
+            'Emojification failed!', json.dumps(emoji_fails))
     return '\n'.join(comment_lines)
 
 
 def gen_post(weekday: int, client: praw.Reddit) -> str:
-    j2_env = Environment(loader=FileSystemLoader('./templates'), trim_blocks=True)
+    j2_env = Environment(loader=FileSystemLoader(
+        './templates'), trim_blocks=True)
     template = j2_env.get_template('daily_post.j2')
 
     if weekday == 4:  # Friday is Fri-ku-day
@@ -103,7 +107,12 @@ def gen_post(weekday: int, client: praw.Reddit) -> str:
     else:
         quote_of_the_day = daily_markov.get_quote(subreddit)
 
-    forecast = get_weather(client)
+    try:
+        forecast = get_weather(client)
+    except:  # Lazy catch all exceptions
+        print('Error in forecast: {}'.format(sys.exc_info()[0]))
+        forecast = '{} Could not fetch weather, government must be shutdown.'.format(
+            Emojis.FearfulFace)
 
     return template.render(day_of_week=weekday, forecast=forecast, qotd=quote_of_the_day)
 
@@ -119,6 +128,8 @@ if __name__ == '__main__':
 
     now = datetime.datetime.now()
     post = gen_post(now.weekday(), reddit)
+
+    print(post)
 
     subreddit.submit(title=now.strftime("Seattle Reddit Community Open Chat, %A, %B %d, %Y"),
                      selftext=post,
