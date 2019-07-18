@@ -39,7 +39,7 @@ def get_weather_emoji(period: Dict[str, Any]) -> Optional[str]:
     if match is None:
         return None
 
-    night = period['isDaytime']
+    night = not period['isDaytime']
     short_forecast = match.group(1).lower()
 
     rainy_regex = r'.*rain.*'
