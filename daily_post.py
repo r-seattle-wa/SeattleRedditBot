@@ -35,7 +35,7 @@ def _convert_time_str_to_datetime(time: str) -> datetime.datetime:
 
 def get_weather_emoji(period: Dict[str, Any]) -> Optional[str]:
     # only get the first phrase in the short forecast
-    match = re.match(r'^((?:[A-Z]\w+ )+[A-Z]\w+)', period['shortForecast'])
+    match = re.match(r'^((?:[A-Z]\w+ )*[A-Z]\w+)', period['shortForecast'])
     if match is None:
         return None
 
