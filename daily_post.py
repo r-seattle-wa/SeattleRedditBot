@@ -12,25 +12,55 @@ from bot import *
 import daily_markov
 
 
-FORECAST_URL = 'https://api.weather.gov/gridpoints/SEW/123,68/forecast'
+NWS_FORECAST_URL = 'https://api.weather.gov/gridpoints/SEW/123,68/forecast'
+ASTRO_APP_MOON_API_URL = 'https://api.usno.navy.mil/moon/phase'
 
 
 class Emojis:
-    NewMoon = '\U0001F311'
-    Sunny = '\u2600'
-    Cloudy = '\u2601'
-    PartlyCloudy = '\u26C5'
+    NewMoon = '\U0001F31A'
+    FirstQuarterMoon = '\U0001F31B'
+    ThirdQuarterMoon = '\U0001F31C'
+    FullMoon = '\U0001F31D'
+    Sun = '\U0001F31E'
+    Cloud = '\u2601'
+    SunBehindCloud = '\u26C5'
     RainAndLightning = '\u26C8'
     Rain = '\U0001F327'
     Snow = '\U0001F328'
     Lightning = '\U0001F329'
-    Fog = '\U0001F32B'
+    Fog = '\U0001F301'
+    NightWithStars = '\U0001F303'
     FearfulFace = '\U0001F628'
 
 
 def _convert_time_str_to_datetime(time: str) -> datetime.datetime:
     time = re.sub(r'([-+]\d\d):(\d\d)', r'\1\2', time)
     return datetime.datetime.strptime(time, '%Y-%m-%dT%H:%M:%S%z')
+
+
+def get_moon_phase(date: datetime.datetime) -> str:
+    response = requests.get(ASTRO_APP_MOON_API_URL, params={
+        'date': date.strftime('%m/%d/%Y'),
+        'nump': 1
+    })
+    data = response.json()
+
+    if data['error']:
+        raise Exception('Moon phase API returned error: {}'
+                        .format(data['type']))
+
+    phase_name = data['phasedata'][0]['phase']
+    if phase_name == 'New Moon':
+        return Emojis.NewMoon
+    elif phase_name == 'First Quarter':
+        return Emojis.FirstQuarterMoon
+    elif phase_name == 'Full Moon':
+        return Emojis.FullMoon
+    elif phase_name == 'Last Quarter':
+        return Emojis.ThirdQuarterMoon
+    else:
+        raise Exception('Moon phase API returned an unexpected phase name: {}'
+                        .format(phase_name))
 
 
 def get_weather_emoji(period: Dict[str, Any]) -> Optional[str]:
@@ -53,13 +83,17 @@ def get_weather_emoji(period: Dict[str, Any]) -> Optional[str]:
     if re.fullmatch(rainy_regex, short_forecast):
         return Emojis.Rain
     elif re.fullmatch(cloudy_regex, short_forecast):
-        return Emojis.Cloudy
+        return Emojis.Cloud
     elif re.fullmatch(partly_cloudy_regex, short_forecast):
-        return Emojis.PartlyCloudy
+        if night:
+            date = _convert_time_str_to_datetime(period['startTime']).date()
+            return get_moon_phase(date) + Emojis.Cloud
+        else:
+            return Emojis.SunBehindCloud
     elif re.fullmatch(sunny_regex, short_forecast):
-        return Emojis.Sunny
+        return Emojis.Sun
     elif re.fullmatch(clear_regex, short_forecast) and night:
-        return Emojis.NewMoon
+        return Emojis.NightWithStars
     elif re.fullmatch(thunderstorm_regex, short_forecast):
         return Emojis.RainAndLightning
     elif re.fullmatch(fog_regex, short_forecast):
@@ -69,7 +103,7 @@ def get_weather_emoji(period: Dict[str, Any]) -> Optional[str]:
 
 
 def get_weather(client: praw.Reddit) -> str:
-    response = requests.get(FORECAST_URL)
+    response = requests.get(NWS_FORECAST_URL)
     data = response.json()
 
     # TODO: I vaguely remember there being a way to get advisories. Can't find it right now for some reason though
@@ -82,11 +116,16 @@ def get_weather(client: praw.Reddit) -> str:
 
     for period in forecast_periods:
         name, forecast = period['name'], period['detailedForecast']
-        emoji = get_weather_emoji(period)
-        if emoji is not None:
-            comment_lines.append('* {}: {} {}'.format(name, emoji, forecast))
-        else:
+        try:
+            emoji = get_weather_emoji(period)
+            if emoji is not None:
+                comment_lines.append('* {}: {} {}'.format(name, emoji, forecast))
+            else:
+                emoji_fails.append(period)
+                comment_lines.append('* {}: {}'.format(name, forecast))
+        except Exception as e:
             emoji_fails.append(period)
+            emoji_fails.append('{}\n{}'.format(e, e.__traceback__))
             comment_lines.append('* {}: {}'.format(name, forecast))
 
     # We might not have been able to emojify the weather, send a PM so that we can fix it
