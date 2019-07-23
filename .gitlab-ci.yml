@@ -1,10 +1,6 @@
 .docker_job: &docker_job
-  image: docker
-  services:
-    - docker:dind
-  variables:
-    DOCKER_HOST: tcp://docker:2375/
-    DOCKER_DRIVER: overlay2
+  tags:
+    - docker
 
 variables:
   AWS_ACCESS_KEY_ID: ${ECS_ACCESS_KEY}
@@ -34,9 +30,6 @@ Build Test Image:
   stage: docker
   except:
     - master
-  variables:
-    DOCKER_HOST: tcp://docker:2375/
-    DOCKER_DRIVER: overlay2
   script:
     - docker build -t ${ECR_REPO}:${CI_COMMIT_SHORT_SHA} .
 
