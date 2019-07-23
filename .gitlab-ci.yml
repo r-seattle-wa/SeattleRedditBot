@@ -1,6 +1,10 @@
 .docker_job: &docker_job
-  tags:
-    - docker
+  image: docker
+  services:
+    - docker:dind
+  variables:
+    DOCKER_HOST: tcp://docker:2375/
+    DOCKER_DRIVER: overlay2
 
 variables:
   AWS_ACCESS_KEY_ID: ${ECS_ACCESS_KEY}
