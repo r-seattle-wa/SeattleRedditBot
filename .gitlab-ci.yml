@@ -3,8 +3,9 @@
   services:
     - docker:dind
   variables:
-    DOCKER_HOST: tcp://localhost:2375/
+    DOCKER_HOST: tcp://docker:2375/
     DOCKER_DRIVER: overlay2
+    DOCKER_TLS_CERTDIR: ""
 
 variables:
   AWS_ACCESS_KEY_ID: ${ECS_ACCESS_KEY}
