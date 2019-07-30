@@ -1,5 +1,6 @@
 #!/usr/bin/env python
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
+from functools import lru_cache
 import datetime
 import json
 import re
@@ -13,7 +14,6 @@ import daily_markov
 
 
 NWS_FORECAST_URL = 'https://api.weather.gov/gridpoints/SEW/123,68/forecast'
-ASTRO_APP_MOON_API_URL = 'https://api.usno.navy.mil/moon/phase'
 
 
 class Emojis:
@@ -33,23 +33,39 @@ class Emojis:
     FearfulFace = '\U0001F628'
 
 
+class MoonPhases:
+
+    @staticmethod
+    @lru_cache(maxsize=None)
+    def _load_phase_data() -> List[Dict[str, Any]]:
+        with open('moon_phases.json', 'r') as f:
+            phase_data = json.load(f)
+        return [
+            {
+                'phase': phase['phase'],
+                'datetime': datetime.datetime.strptime(
+                    '{} {}'.format(phase['date'], phase['time']),
+                    '%Y %b %d %H:%M')
+            }
+            for phase in phase_data
+        ]
+
+    @classmethod
+    def get_phase(cls, date: datetime.date) -> str:
+        phases = cls._load_phase_data()
+        for i in range(len(phases) - 1):
+            if phases[i]['datetime'].date() < date < phases[i+1]['datetime'].date():
+                return phases[i]['phase']
+        raise ValueError('Date is out of range.')
+
+
 def _convert_time_str_to_datetime(time: str) -> datetime.datetime:
     time = re.sub(r'([-+]\d\d):(\d\d)', r'\1\2', time)
     return datetime.datetime.strptime(time, '%Y-%m-%dT%H:%M:%S%z')
 
 
-def get_moon_phase(date: datetime.datetime) -> str:
-    response = requests.get(ASTRO_APP_MOON_API_URL, params={
-        'date': date.strftime('%m/%d/%Y'),
-        'nump': 1
-    })
-    data = response.json()
-
-    if data['error']:
-        raise Exception('Moon phase API returned error: {}'
-                        .format(data['type']))
-
-    phase_name = data['phasedata'][0]['phase']
+def get_moon_phase(date: datetime.date) -> str:
+    phase_name = MoonPhases.get_phase(date)
     if phase_name == 'New Moon':
         return Emojis.NewMoon
     elif phase_name == 'First Quarter':
