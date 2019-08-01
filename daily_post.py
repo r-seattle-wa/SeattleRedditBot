@@ -54,7 +54,7 @@ class MoonPhases:
     def get_phase(cls, date: datetime.date) -> str:
         phases = cls._load_phase_data()
         for i in range(len(phases) - 1):
-            if phases[i]['datetime'].date() < date < phases[i+1]['datetime'].date():
+            if phases[i]['datetime'].date() <= date < phases[i+1]['datetime'].date():
                 return phases[i]['phase']
         raise ValueError('Date is out of range.')
 
