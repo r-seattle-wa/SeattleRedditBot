@@ -88,7 +88,7 @@ def get_weather_emoji(period: Dict[str, Any]) -> Optional[str]:
     night = not period['isDaytime']
     short_forecast = match.group(1).lower()
 
-    rainy_regex = r'.*rain.*'
+    rainy_regex = r'.*(?:rain|drizzle).*'
     cloudy_regex = r'(?:mostly )?cloudy'
     partly_cloudy_regex = r'partly (?:sunny|cloudy)'
     sunny_regex = r'(?:mostly )?sunny'
