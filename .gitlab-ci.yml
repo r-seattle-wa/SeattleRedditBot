@@ -21,8 +21,6 @@ stages:
 
 ECR Login:
   stage: ecr
-  only:
-    - master
   image: mikesir87/aws-cli
   script:
     - aws ecr get-login --no-include-email > ecr_login.sh
