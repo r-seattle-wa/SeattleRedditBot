@@ -16,6 +16,7 @@ variables:
 stages:
   - ecr
   - docker
+  - test
   - fargate
 
 ECR Login:
@@ -35,8 +36,25 @@ Build Test Image:
   stage: docker
   except:
     - master
+  dependencies:
+    - ECR Login
   script:
-    - docker build -t ${ECR_REPO}:${CI_COMMIT_SHORT_SHA} .
+    - echo "${TEST_BOT_CONFIG}" > bot.py
+    - sh ecr_login.sh
+    - docker build -t ${ECR_REPO}:${CI_COMMIT_SHORT_SHA}-dirty .
+    - docker push ${ECR_REPO}:${CI_COMMIT_SHORT_SHA}-dirty
+
+Run Test Image:
+  <<: *docker_job
+  stage: test
+  except:
+    - master
+  dependencies:
+    - ECR Login
+  script:
+    - sh ecr_login.sh
+    - docker run ${ECR_REPO}:${CI_COMMIT_SHORT_SHA}-dirty
+    - echo "Check results on https://reddit.com/r/seattlewaredditbot/new/"
 
 Build Docker Image:
   <<: *docker_job
