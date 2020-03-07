@@ -16,13 +16,12 @@ variables:
 stages:
   - ecr
   - docker
+  - test
   - fargate
 
 ECR Login:
   stage: ecr
-  only:
-    - master
-  image: mikesir87/aws-cli
+  image: registry.gitlab.com/gitlab-org/cloud-deploy:v0.1.1
   script:
     - aws ecr get-login --no-include-email > ecr_login.sh
   artifacts:
@@ -35,8 +34,25 @@ Build Test Image:
   stage: docker
   except:
     - master
+  dependencies:
+    - ECR Login
   script:
-    - docker build -t ${ECR_REPO}:${CI_COMMIT_SHORT_SHA} .
+    - echo "${TEST_BOT_CONFIG}" > bot.py
+    - sh ecr_login.sh
+    - docker build -t ${ECR_REPO}:${CI_COMMIT_SHORT_SHA}-dirty .
+    - docker push ${ECR_REPO}:${CI_COMMIT_SHORT_SHA}-dirty
+
+Run Test Image:
+  <<: *docker_job
+  stage: test
+  except:
+    - master
+  dependencies:
+    - ECR Login
+  script:
+    - sh ecr_login.sh
+    - docker run ${ECR_REPO}:${CI_COMMIT_SHORT_SHA}-dirty
+    - echo "Check results on https://reddit.com/r/seattlewaredditbot/new/"
 
 Build Docker Image:
   <<: *docker_job
@@ -55,7 +71,7 @@ Update Fargate:
   stage: fargate
   only:
     - master
-  image: mikesir87/aws-cli
+  image: registry.gitlab.com/gitlab-org/cloud-deploy:v0.1.1
   script:
     - sed -i "s?%%DOCKER_TAG%%?${CI_COMMIT_SHORT_SHA}?" aws_resources/ecs_task_definition.json
     - TASK_DEF_ARN=$(aws ecs register-task-definition --cli-input-json file://aws_resources/ecs_task_definition.json --query 'taskDefinition.taskDefinitionArn' --output text)
