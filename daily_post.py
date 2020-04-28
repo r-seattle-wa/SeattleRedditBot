@@ -144,10 +144,6 @@ def get_weather(client: praw.Reddit) -> str:
             emoji_fails.append('{}\n{}'.format(e, e.__traceback__))
             comment_lines.append('* {}: {}'.format(name, forecast))
 
-    # We might not have been able to emojify the weather, send a PM so that we can fix it
-    if emoji_fails:
-        client.redditor('wchill').message(
-            'Emojification failed!', json.dumps(emoji_fails))
     return '\n'.join(comment_lines)
 
 
