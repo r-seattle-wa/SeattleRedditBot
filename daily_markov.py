@@ -1,3 +1,16 @@
+"""
+daily_markov.py - Markov Chain Text Generator for r/SeattleWA
+
+This module generates quotes and haikus from subreddit comment history using Markov chains.
+Used by daily_post.py to create the "Quote of the Day" and Friday haikus.
+
+Functions:
+    get_history(): Fetches recent comments from a subreddit
+    get_markov(): Builds a Markov model from comment history
+    get_quote(): Generates a random quote using the Markov model
+    get_haiku(): Generates a 5-7-5 haiku from comment text
+"""
+
 from typing import Optional, Tuple
 import random
 import re
@@ -15,6 +28,15 @@ FOOTER = '\n\n-----\n\n[^^Info](https://github.com/trambelus/UserSim) ^^| [^^Sub
 
 
 class PText(markovify.Text):
+    """
+    Custom Markov text model that filters out unwanted patterns.
+    
+    Extends markovify.Text to reject sentences containing:
+    - Emotes (Reddit markdown format)
+    - Quotes with mismatched apostrophes
+    - Links to UserSim or User_Simulator
+    - Various special characters
+    """
 
     def test_sentence_input(self, sentence: str) -> bool:
         emote_pat = re.compile(r"\[.+?\]\(\/.+?\)")
@@ -36,6 +58,16 @@ class PText(markovify.Text):
 
 
 def get_history(subreddit: Subreddit, limit: int) -> Tuple[Optional[str], int, float]:
+    """
+    Fetch recent comment history from a subreddit.
+    
+    Args:
+        subreddit: PRAW Subreddit object to fetch comments from
+        limit: Maximum number of comments to retrieve
+        
+    Returns:
+        Tuple of (combined comment text, comment count, average sentences per comment)
+    """
     try:
         comments = subreddit.comments(limit=limit)
         if comments is None:
@@ -65,12 +97,18 @@ def get_history(subreddit: Subreddit, limit: int) -> Tuple[Optional[str], int, f
 
 
 def get_markov(subreddit: Subreddit) -> Tuple[PText, int]:
+    """Build a Markov model from subreddit comment history."""
     (history, num_comments, sentence_avg) = get_history(subreddit, 1000)
     model = PText(history, state_size=STATE_SIZE)
     return model, int(sentence_avg)
 
 
 def get_quote(subreddit: Subreddit) -> str:
+    """
+    Generate a random quote using Markov chains from subreddit comments.
+    
+    Returns a formatted Reddit quote block with attribution to the subreddit.
+    """
     try:
         (model, sentence_avg) = get_markov(subreddit)
         quote_r = []
@@ -88,6 +126,12 @@ def get_quote(subreddit: Subreddit) -> str:
 
 
 def get_haiku(subreddit: Subreddit) -> str:
+    """
+    Generate a haiku (5-7-5 syllable poem) from subreddit comment history.
+    
+    Used for "Fri-ku-day" - the Friday special in the daily post.
+    Returns formatted italic haiku lines for Reddit markdown.
+    """
     (history, num_comments, sentence_avg) = get_history(subreddit, 5000)
 
     if not history:

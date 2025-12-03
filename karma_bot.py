@@ -1,4 +1,21 @@
 #!/usr/bin/env python
+"""
+karma_bot.py - Discord Bot for Reddit Karma Lookup
+
+A Discord bot that allows users to check Reddit karma statistics.
+Designed for the r/SeattleWA Discord server.
+
+Commands:
+    !karma <username>: Shows user's karma in r/SeattleWA
+    !topkarma <username>: Shows user's top 5 subreddits by karma
+    !bottomkarma <username>: Shows user's bottom 5 subreddits by karma
+
+Note: This bot uses deprecated Discord.py API methods (send_message).
+May require updates for compatibility with discord.py 2.0+.
+
+Configuration:
+    Requires bot.py with DISCORD_TOKEN and Reddit API credentials.
+"""
 from typing import Dict
 from collections import defaultdict
 import operator
@@ -26,6 +43,15 @@ async def on_ready() -> None:
 
 
 def get_user_subreddit_karma(user: str) -> Dict[str, int]:
+    """
+    Calculate karma breakdown by subreddit for a Reddit user.
+    
+    Args:
+        user: Reddit username to look up
+        
+    Returns:
+        Dictionary mapping subreddit names to karma totals
+    """
     karma = defaultdict(int)
     reddit_user = reddit.redditor(user)
 

@@ -1,4 +1,24 @@
 #!/usr/bin/env python
+"""
+daily_post.py - Daily Reddit Post Generator for r/SeattleWA
+
+This script creates and posts the daily community open chat thread to r/SeattleWA.
+The post includes:
+- Links to local event calendars
+- A 2-day weather forecast with emoji representations
+- Moon phase information
+- A quote of the day (or haiku on Fridays - "Fri-ku-day")
+- Links to the community Discord and archives
+
+The script is designed to run once daily via a scheduled task (AWS Fargate/CloudWatch Events).
+
+Usage:
+    python daily_post.py
+
+Configuration:
+    Requires a bot.py file with Reddit API credentials. See README.md for details.
+"""
+
 from typing import Any, Dict, List, Optional
 from functools import lru_cache
 import datetime
@@ -13,10 +33,12 @@ from bot import *
 import daily_markov
 
 
+# National Weather Service API endpoint for Seattle area (grid point SEW/123,68)
 NWS_FORECAST_URL = 'https://api.weather.gov/gridpoints/SEW/123,68/forecast'
 
 
 class Emojis:
+    """Unicode emoji constants for weather and moon phase display."""
     NewMoon = '\U0001F31A'
     FirstQuarterMoon = '\U0001F31B'
     ThirdQuarterMoon = '\U0001F31C'
@@ -34,6 +56,12 @@ class Emojis:
 
 
 class MoonPhases:
+    """
+    Handles moon phase lookups from precomputed phase data.
+    
+    Uses moon_phases.json which contains phase transitions.
+    The JSON file should be updated periodically to extend coverage.
+    """
 
     @staticmethod
     @lru_cache(maxsize=None)
