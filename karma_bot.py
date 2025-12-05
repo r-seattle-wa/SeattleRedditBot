@@ -10,9 +10,6 @@ Commands:
     !topkarma <username>: Shows user's top 5 subreddits by karma
     !bottomkarma <username>: Shows user's bottom 5 subreddits by karma
 
-Note: This bot uses deprecated Discord.py API methods (send_message).
-May require updates for compatibility with discord.py 2.0+.
-
 Configuration:
     Requires bot.py with DISCORD_TOKEN and Reddit API credentials.
 """
@@ -25,7 +22,9 @@ import praw
 
 from bot import *
 
-client = discord.Client()
+intents = discord.Intents.default()
+intents.message_content = True
+client = discord.Client(intents=intents)
 
 reddit = praw.Reddit(client_id=CLIENT_ID,
                      client_secret=CLIENT_SECRET,
@@ -45,10 +44,10 @@ async def on_ready() -> None:
 def get_user_subreddit_karma(user: str) -> Dict[str, int]:
     """
     Calculate karma breakdown by subreddit for a Reddit user.
-    
+
     Args:
         user: Reddit username to look up
-        
+
     Returns:
         Dictionary mapping subreddit names to karma totals
     """
@@ -82,19 +81,19 @@ async def on_message(message: discord.Message) -> None:
             if comment.subreddit.display_name == 'SeattleWA':
                 sub_karma += comment.score
 
-        await message.channel.send_message('User {} has {} karma in r/SeattleWA'.format(user, sub_karma))
+        await message.channel.send(f'User {user} has {sub_karma} karma in r/SeattleWA')
 
     elif command == '!topkarma':
         all_karma = get_user_subreddit_karma(user)
         top_five = sorted(all_karma.items(), key=operator.itemgetter(1), reverse=True)[:5]
 
-        await message.channel.send_message('Top 5 karma for user {}: {}'.format(user, top_five))
+        await message.channel.send(f'Top 5 karma for user {user}: {top_five}')
 
     elif command == '!bottomkarma':
         all_karma = get_user_subreddit_karma(user)
         bottom_five = sorted(all_karma.items(), key=operator.itemgetter(1))[:5]
 
-        await message.channel.send_message('Bottom 5 karma for user {}: {}'.format(user, bottom_five))
+        await message.channel.send(f'Bottom 5 karma for user {user}: {bottom_five}')
 
 
 if __name__ == '__main__':
